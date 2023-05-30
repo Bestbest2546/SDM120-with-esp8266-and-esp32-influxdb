@@ -1,8 +1,12 @@
 /*
- * OTAWebUpdater.ino Example from ArduinoOTA Library
- * Rui Santos
- * Complete Project Details https://randomnerdtutorials.com
- */
+  Rui Santos
+  Complete project details
+   - Arduino IDE: https://RandomNerdTutorials.com/esp8266-nodemcu-ota-over-the-air-arduino/
+   - VS Code: https://RandomNerdTutorials.com/esp8266-nodemcu-ota-over-the-air-vs-code/
+     
+  This sketch shows a Basic example from the AsyncElegantOTA library: ESP8266_Async_Demo
+  https://github.com/ayushsharma82/AsyncElegantOTA
+*/
 #include <InfluxDbClient.h>
 
 #if defined(ESP32)
@@ -21,11 +25,11 @@ ESP8266WiFiMulti wifiMulti;
 #include <SoftwareSerial.h>
 
 
+#include <Arduino.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>
-#include <ESP8266HTTPClient.h>
-#include <ESP8266httpUpdate.h>
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncElegantOTA.h>
 
 float V=0;
 float A=0;
@@ -83,114 +87,26 @@ return reform_uint16_2_float32(node.getResponseBuffer(0), node.getResponseBuffer
 return 0;
 }
 
-
-const char* host = "esp8266";
 const char* ssid = "TTTA@DOM";
 const char* password = "Ttta@2021";
 
-ESP8266WebServer server(80);
+AsyncWebServer server(80);
 
-/*
- * Login page
- */
-const char* loginIndex =
- "<form name='loginForm'>"
-    "<table width='20%' bgcolor='A09F9F' align='center'>"
-        "<tr>"
-            "<td colspan=2>"
-                "<center><font size=4><b>ESP8266 Login Page</b></font></center>"
-                "<br>"
-            "</td>"
-            "<br>"
-            "<br>"
-        "</tr>"
-        "<td>Username:</td>"
-        "<td><input type='text' size=25 name='userid'><br></td>"
-        "</tr>"
-        "<br>"
-        "<br>"
-        "<tr>"
-            "<td>Password:</td>"
-            "<td><input type='Password' size=25 name='pwd'><br></td>"
-            "<br>"
-            "<br>"
-        "</tr>"
-        "<tr>"
-            "<td><input type='submit' onclick='check(this.form)' value='Login'></td>"
-        "</tr>"
-    "</table>"
-"</form>"
-"<script>"
-    "function check(form)"
-    "{"
-    "if(form.userid.value=='admin' && form.pwd.value=='admin')"
-    "{"
-    "window.open('/serverIndex')"
-    "}"
-    "else"
-    "{"
-    " alert('Error Password or Username')/*displays error message*/"
-    "}"
-    "}"
-"</script>";
-
-/*
- * Server Index Page
- */
-
-const char* serverIndex =
-"<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>"
-"<form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>"
-   "<input type='file' name='update'>"
-        "<input type='submit' value='Update'>"
-    "</form>"
- "<div id='prg'>progress: 0%</div>"
- "<script>"
-  "$('form').submit(function(e){"
-  "e.preventDefault();"
-  "var form = $('#upload_form')[0];"
-  "var data = new FormData(form);"
-  " $.ajax({"
-  "url: '/update',"
-  "type: 'POST',"
-  "data: data,"
-  "contentType: false,"
-  "processData:false,"
-  "xhr: function() {"
-  "var xhr = new window.XMLHttpRequest();"
-  "xhr.upload.addEventListener('progress', function(evt) {"
-  "if (evt.lengthComputable) {"
-  "var per = evt.loaded / evt.total;"
-  "$('#prg').html('progress: ' + Math.round(per*100) + '%');"
-  "}"
-  "}, false);"
-  "return xhr;"
-  "},"
-  "success:function(d, s) {"
-  "console.log('success!')"
- "},"
- "error: function (a, b, c) {"
- "}"
- "});"
- "});"
- "</script>";
-
-/*
- * setup function
- */
 void setup(void) {
   Serial.begin(115200);
-
-    WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
   wifiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
+  Serial.println("");
 
-  Serial.print("Connecting to wifi");
+    Serial.print("Connecting to wifi");
   while (wifiMulti.run() != WL_CONNECTED) {
     Serial.print(".");
     delay(100);
   }
+  Serial.println();
 
-  timeSync(TZ_INFO, "pool.ntp.org", "time.nis.gov");
+   timeSync(TZ_INFO, "pool.ntp.org", "time.nis.gov");
 
   if (client.validateConnection()) {
     Serial.print("Connected to InfluxDB: ");
@@ -200,9 +116,6 @@ void setup(void) {
     Serial.println(client.getLastErrorMessage());
   }
 
-  // Connect to WiFi network
-  WiFi.begin(ssid, password);
-  Serial.println("");
 
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED) {
@@ -215,58 +128,17 @@ void setup(void) {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  /*use mdns for host name resolution*/
-  if (!MDNS.begin(host)) {
-    Serial.println("Error setting up MDNS responder!");
-    while (1) {
-      delay(1000);
-    }
-  }
-  Serial.println("mDNS responder started");
-
-  /*return index page which is stored in serverIndex */
-  server.on("/", HTTP_GET, []() {
-    server.sendHeader("Connection", "close");
-    server.send(200, "text/html", loginIndex);
-  });
-  server.on("/serverIndex", HTTP_GET, []() {
-    server.sendHeader("Connection", "close");
-    server.send(200, "text/html", serverIndex);
-  });
-  /*handling uploading firmware file */
-  server.on("/update", HTTP_POST, []() {
-    server.sendHeader("Connection", "close");
-    server.send(200, "text/plain", "OK");
-    ESP.restart();
-  }, []() {
-    HTTPUpload& upload = server.upload();
-    if (upload.status == UPLOAD_FILE_START) {
-      Serial.printf("Update: %s\n", upload.filename.c_str());
-      WiFiClient client;
-      t_httpUpdate_return ret = ESPhttpUpdate.update(client, "", upload.filename);
-      switch (ret) {
-        case HTTP_UPDATE_FAILED:
-          Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-          break;
-        case HTTP_UPDATE_NO_UPDATES:
-          Serial.println("HTTP_UPDATE_NO_UPDATES");
-          break;
-        case HTTP_UPDATE_OK:
-          Serial.println("HTTP_UPDATE_OK");
-          break;
-      }
-    }
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "add /update) back ip address");
   });
 
+  AsyncElegantOTA.begin(&server);    // Start ElegantOTA
   server.begin();
+  Serial.println("HTTP server started");
 }
 
 void loop(void) {
-  
-  server.handleClient();
-  delay(1);
-
-  SoftwareSerial SerialMod1(D1, D2);
+SoftwareSerial SerialMod1(D1, D2);
 ModbusMaster node1;
 SerialMod1.begin(9600);
 node1.begin(1, SerialMod1);
@@ -342,7 +214,4 @@ Serial.print("Writing: ");
   
   Serial.println("Wait 5s");  
   delay(5000);
-
 }
-
-
