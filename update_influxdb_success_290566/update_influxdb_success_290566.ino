@@ -23,8 +23,7 @@ float PF=0;
 float F=0;
 
 #define modbusaddr 1
-#define modbusaddr 2
-#define modbusaddr 3
+
 
 #define WIFI_SSID "TTTA@DOM"                                                                                                    // WiFi password
 #define WIFI_PASSWORD "Ttta@2021"                                                                                               // InfluxDB v2 server url, e.g. https://eu-central-1-1.aws.cloud2.influxdata.com (Use: InfluxDB UI -> Load Data -> Client Libraries)
