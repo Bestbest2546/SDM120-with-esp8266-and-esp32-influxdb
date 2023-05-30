@@ -140,7 +140,7 @@ void setup(void) {
 void loop(void) {
 SoftwareSerial SerialMod1(D1, D2);
 ModbusMaster node1;
-SerialMod1.begin(9600);
+SerialMod1.begin(2400);
 node1.begin(1, SerialMod1);
 
 
