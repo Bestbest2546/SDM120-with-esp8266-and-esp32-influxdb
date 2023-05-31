@@ -54,7 +54,7 @@ float F=0;
 
 InfluxDBClient client(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
 
-Point sensor("SDM ID1");
+Point sensor("SDM ID2");
 
 
 float reform_uint16_2_float32(uint16_t u1, uint16_t u2)
@@ -140,7 +140,7 @@ void setup(void) {
 void loop(void) {
 SoftwareSerial SerialMod1(D1, D2);
 ModbusMaster node1;
-SerialMod1.begin(2400);
+SerialMod1.begin(9600);
 node1.begin(1, SerialMod1);
 
 
