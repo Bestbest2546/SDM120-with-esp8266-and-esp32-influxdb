@@ -25,7 +25,7 @@ ESP8266WiFiMulti wifiMulti;
 #include <SoftwareSerial.h>
 
 
-#include <Arduino.h>
+  #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -53,8 +53,9 @@ float F=0;
 #define TZ_INFO "<+07>-7"
 
 InfluxDBClient client(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
+Point sensor("ESP8266GRID");
 
-Point sensor("SDM ID3");
+
 
 
 float reform_uint16_2_float32(uint16_t u1, uint16_t u2)
@@ -140,7 +141,7 @@ void setup(void) {
 void loop(void) {
 SoftwareSerial SerialMod1(D1, D2);
 ModbusMaster node1;
-SerialMod1.begin(2400);
+SerialMod1.begin(9600);
 node1.begin(1, SerialMod1);
 
 
@@ -150,51 +151,62 @@ float W1 = getRTU(node1, 0x000C);
 float Wh1 = getRTU(node1, 0x0156);
 float PF1 = getRTU(node1, 0x001E);
 float F1 = getRTU(node1, 0x0046);
-float APP1= getRTU(node1, 0x0012);
-float RP1 = getRTU(node1, 0x0018);
-float PA1 = getRTU(node1, 0x0024);
-float IAE1 = getRTU(node1, 0x0048);
-float EAE1 = getRTU(node1, 0x004A);
-float IRE1 = getRTU(node1, 0x004C);
-float ERE1 = getRTU(node1, 0x004E);
-float TRE1 = getRTU(node1, 0x0158);
+// float APP1= getRTU(node1, 0x0012);
+// float RP1 = getRTU(node1, 0x0018);
+// float PA1 = getRTU(node1, 0x0024);
+// float IAE1 = getRTU(node1, 0x0048);
+// float EAE1 = getRTU(node1, 0x004A);
+// float IRE1 = getRTU(node1, 0x004C);
+// float ERE1 = getRTU(node1, 0x004E);
+// float TRE1 = getRTU(node1, 0x0158);
 
 
 sensor.clearFields();
-  
+
+
    sensor.addField("Voltage1",V1);
+   delay(500);
    sensor.addField("Watt1", W1);
+   delay(500);
    sensor.addField("Current1",A1);
+   delay(500);
    sensor.addField("Total Active Energy1",Wh1);
+   delay(500);
    sensor.addField("Frequency1",F1);
+   delay(500);
    sensor.addField("Power Factor1",PF1);
-   sensor.addField("Apparent Power1",APP1);
-   sensor.addField("Reactive Power1",RP1);
-   sensor.addField("Phase Angle1",PA1);
-   sensor.addField("Import  Active Energy1",IAE1);
-   sensor.addField("Export Active Energy1",EAE1);
-   sensor.addField("Import  Reactive Energy1",IRE1);
-   sensor.addField("Export  Reactive Energy1",ERE1);
-   sensor.addField("Total  Reactive Energy1",TRE1);
+   delay(500);
 
 
-Serial.println("Device 1:");
-Serial.println("Voltage : " + String(V1, 2));
-Serial.println("Current : " + String(A1, 2));
-Serial.println("Active Power : " + String(W1, 2));
-Serial.println("Total Active Energy : " + String(Wh1, 2));
-Serial.println("Power Factor : " + String(PF1, 2));
-Serial.println("Frequency : " + String(F1, 2));
-Serial.println("Apparent Power : " + String(APP1, 2));
-Serial.println("Reactive Power : " + String(RP1, 2));
-Serial.println("Phase Angle : " + String(PA1, 2));
-Serial.println("Import  Active Energy : " + String(IAE1, 2));
-Serial.println("Export Active Energy : " + String(EAE1, 2));
-Serial.println("Import  Reactive Energy : " + String(IRE1, 2));
-Serial.println("Export  Reactive Energy : " + String(ERE1, 2));
-Serial.println("Total  Reactive Energy : " + String(TRE1, 2));
-Serial.println("===================");
-delay(1000);
+  
+
+  //  sensor.addField("Apparent Power1",APP1);
+  //  sensor.addField("Reactive Power1",RP1);
+  //  sensor.addField("Phase Angle1",PA1);
+  //  sensor.addField("Import  Active Energy1",IAE1);
+  //  sensor.addField("Export Active Energy1",EAE1);
+  //  sensor.addField("Import  Reactive Energy1",IRE1);
+  //  sensor.addField("Export  Reactive Energy1",ERE1);
+  //  sensor.addField("Total  Reactive Energy1",TRE1);
+
+
+// Serial.println("Device 1:");
+// Serial.println("Voltage : " + String(V1, 2));
+// Serial.println("Current : " + String(A1, 2));
+// Serial.println("Active Power : " + String(W1, 2));
+// Serial.println("Total Active Energy : " + String(Wh1, 2));
+// Serial.println("Power Factor : " + String(PF1, 2));
+// Serial.println("Frequency : " + String(F1, 2));
+// Serial.println("Apparent Power : " + String(APP1, 2));
+// Serial.println("Reactive Power : " + String(RP1, 2));
+// Serial.println("Phase Angle : " + String(PA1, 2));
+// Serial.println("Import  Active Energy : " + String(IAE1, 2));
+// Serial.println("Export Active Energy : " + String(EAE1, 2));
+// Serial.println("Import  Reactive Energy : " + String(IRE1, 2));
+// Serial.println("Export  Reactive Energy : " + String(ERE1, 2));
+// Serial.println("Total  Reactive Energy : " + String(TRE1, 2));
+// Serial.println("===================");
+// delay(1000);
 
 
 
@@ -212,6 +224,6 @@ Serial.print("Writing: ");
     Serial.println(client.getLastErrorMessage());
   }
   
-  Serial.println("Wait 5s");  
-  delay(5000);
+  Serial.println("Wait 1s");  
+  delay(1000);
 }

@@ -1,18 +1,18 @@
-#include <ModbusMasterPzem017.h>
+  #include <ModbusMasterPzem017.h>
 #if defined(ESP32)
 #include <WiFiMulti.h>
 WiFiMulti wifiMulti;
 #define DEVICE "ESP32"
 #elif defined(ESP8266)
 #include <ESP8266WiFiMulti.h>
-ESP8266WiFiMulti wifiMulti;
+ESP8266WiFiMulti wifiMulti;,
 #define DEVICE "ESP8266"
 #endif
 
 #include <InfluxDbClient.h>
 #include <InfluxDbCloud.h>
 
-#include <Arduino.h>
+#include <Arduino.h>  
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -29,7 +29,7 @@ const char* password = "Ttta@2021";
 #define INFLUXDB_URL "http://202.151.182.220:8086"
 // InfluxDB v2 server or cloud API authentication token (Use: InfluxDB UI -> Data -> Tokens -> <select token>)
 #define INFLUXDB_TOKEN "Pd9gfPjLZKvUTpUyksUFGCNls7PQ1Gtua0JjgxZI_4lEb3m6JqmnGAbQ_XRSANYIyDaRV_Af5WzuWVC7tqw2lg=="
-// InfluxDB v2 organization id (Use: InfluxDB UI -> User -> About -> Common Ids )
+// InfluxDB v2 organization id (Use:  InfluxDB UI -> User -> About -> Common Ids )
 #define INFLUXDB_ORG "the tiger team academy"
 // InfluxDB v2 bucket name (Use: InfluxDB UI ->  Data -> Buckets)
 #define INFLUXDB_BUCKET "ttta"
